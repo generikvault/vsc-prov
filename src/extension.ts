@@ -35,43 +35,53 @@ class Formatter {
 
 	public provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
 		let { lineCount, lineAt } = document
-		let cellStarts: number[] | undefined = undefined
+		let cellEnds: number[] | undefined = undefined
 		let delta: vscode.TextEdit[] = []
 		for (let i = 0; i < lineCount; i++) {
 			let line = lineAt(i).text
 
 			let isHeader = line.substring(0, 1) === "#"
-			let commentStart = line.indexOf("//")
-			let contentLength = commentStart < 0 ? line.length : commentStart
-			let cells = line.substring(0, contentLength).split(";")
-			if (cells.length === 1) {
-				if (isHeader)
-					cellStarts = undefined
-				continue
+			let [cells, comment] = col.parseLine(line)
+
+			if (isHeader) {
+				cellEnds = undefined
 			}
 
-			if (isHeader || !cellStarts) {
+			if (isHeader || !cellEnds) {
 				let leftTrimed = cells.map(s => s.trimLeft())
 				let pos = 0
-				cellStarts = []
-				for (let j = 1; j < cells.length; j++) {
-					pos += cells[j - 1].length + 1
-					cellStarts[j] = pos + cells[j].length - leftTrimed[j].length
+				cellEnds = []
+				for (let j = 0; j < leftTrimed.length; j++) {
+					let cell = leftTrimed[j]
+					pos += cell.length
+					if (j != 0) {
+						pos ++ // +1 for ";" separator
+						if (!cell.startsWith(" ")) {
+							pos++
+						}
+					}
+					if (!cell.endsWith(" ")) {
+						pos++
+					}
+					cellEnds[j] = pos
 				}
 			}
 			let formated = cells[0].trim()
-			for (let j = 1; j < cells.length; j++) {
-				while (formated.length + 2 < cellStarts[j] ?? 0)
+			for (let j = 0; j < cells.length - 1; j++) {
+				while (formated.length < cellEnds[j] ?? 0)
 					formated += " "
 				formated += "; "
-				formated += cells[j].trim()
+				formated += cells[j + 1].trim()
 			}
-			formated = formated.trimRight()
-			if (commentStart >= 0)
-				formated += " "
+			if (comment) {
+				let cellEnd = cellEnds[cells.length - 1] ?? 0
+				while (formated.length < cellEnd)
+					formated += " "
+				formated += " // " + comment
+			}
 			delta.push(vscode.TextEdit.replace(new vscode.Range(
 				new vscode.Position(i, 0),
-				new vscode.Position(i, contentLength),
+				new vscode.Position(i, line.length),
 			), formated))
 		}
 		return delta

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import * as col from './col'
 
 export default class Provider implements vscode.DocumentSymbolProvider {
 
@@ -29,10 +30,7 @@ export default class Provider implements vscode.DocumentSymbolProvider {
                     new vscode.Range(new vscode.Position(start, 0), last),
                     new vscode.Range(new vscode.Position(start, 1), new vscode.Position(start, 1 + name.length))))
 
-            line = line.substring(1)
-            let commentStart = line.indexOf("//")
-            let contentLength = commentStart < 0 ? line.length : commentStart
-            let cells = line.substring(0, contentLength).split(";")
+            let [cells, _] = col.parseLine(line.substring(1))
 
             name = cells.map(s => s.trim()).join("; ")
             start = i

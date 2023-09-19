@@ -32,28 +32,7 @@
 		},
 		"table": {
 			"name": "constant.other.table.prov",
-			"begin": "^\\[([^\\]]+)\\]",
-			"beginCaptures": {
-				"1": {
-					"name": "markup.bold.caption.prov"
-				}
-			},
-			"end": "$",
-			"patterns": [
-				{
-					"include": "#comment"
-				},
-				{
-					"include": "#header"
-				},
-				{
-					"include": "#invalid"
-				}
-			]
-		},
-		"header": {
-			"name": "constant.other.data.prov",
-			"begin": "^(?!\\[)(?=.)",
+			"begin": "^# *",
 			"end": "$",
 			"patterns": [
 				{
@@ -70,13 +49,29 @@
 				}
 			]
 		},
+		"header": {
+			"name": "constant.other.header.prov",
+			"begin": "^",
+			"end": "$",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#column"
+				},
+				{
+					"include": "#invalid"
+				}
+			]
+		},
 		"column": {
-			"name": "markup.bold.caption.prov",
+			"name": "markup.bold.column.prov",
 			"match": "(?!\\s)(\\s*([^;\\s/]|/(?!/))+)+"
 		},
 		"data": {
 			"name": "constant.other.data.prov",
-			"begin": "^(?!\\[)(?=.)",
+			"begin": "^(?!#)(?=.)",
 			"end": "$",
 			"patterns": [
 				{

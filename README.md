@@ -22,4 +22,4 @@ cell one    ; cell two   ; cell three
 - Syntax highlighting
 - Formatter
 - Statusbar column information
-- Block symbols
+- Table symbols

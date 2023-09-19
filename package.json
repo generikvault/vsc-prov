@@ -40,15 +40,15 @@
         "commands": [
             {
                 "command": "prov.selectColumn",
-                "title": "Select a column of the current prov block"
+                "title": "Select a column of the current prov table"
             },
             {
                 "command": "prov.moveColumnLeft",
-                "title": "Move a column of the current prov block to the left"
+                "title": "Move a column of the current prov table to the left"
             },
             {
                 "command": "prov.moveColumnRight",
-                "title": "Move a column of the current prov block to the the right"
+                "title": "Move a column of the current prov table to the the right"
             }
         ],
         "menus": {

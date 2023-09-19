@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
 
 export default class Provider implements vscode.DocumentSymbolProvider {
 
@@ -17,26 +17,31 @@ export default class Provider implements vscode.DocumentSymbolProvider {
                 continue
             }
 
-            if (line.substring(0, 1) !== "[") {
+            if (line.substring(0, 1) !== "#") {
                 last = new vscode.Position(i, line.length)
                 continue
             }
 
             if (name !== "")
                 symbols.push(new vscode.DocumentSymbol(name,
-                    'PROV Block',
+                    'table',
                     vscode.SymbolKind.Class,
                     new vscode.Range(new vscode.Position(start, 0), last),
                     new vscode.Range(new vscode.Position(start, 1), new vscode.Position(start, 1 + name.length))))
 
-            name = line.substring(1, line.indexOf("]"))
+            line = line.substring(1)
+            let commentStart = line.indexOf("//")
+            let contentLength = commentStart < 0 ? line.length : commentStart
+            let cells = line.substring(0, contentLength).split(";")
+
+            name = cells.map(s => s.trim()).join("; ")
             start = i
             last = new vscode.Position(i, line.length)
 
         }
         if (name !== "")
             symbols.push(new vscode.DocumentSymbol(name,
-                'PROV Block',
+                'table',
                 vscode.SymbolKind.Class,
                 new vscode.Range(new vscode.Position(start, 0), last),
                 new vscode.Range(new vscode.Position(start, 1), new vscode.Position(start, 1 + name.length))))

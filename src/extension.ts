@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import Provider from './provider';
-import * as col from './col';
+import * as vscode from 'vscode'
+import Provider from './provider'
+import * as col from './col'
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -12,15 +12,15 @@ export function activate(context: vscode.ExtensionContext) {
 		inEditor("prov.selectColumn", col.selectCol),
 		inEditor("prov.moveColumnLeft", col.moveColLeft),
 		inEditor("prov.moveColumnRight", col.moveColRight),
-	);
+	)
 }
 
 function inEditor(name: string, fn: (editor: vscode.TextEditor) => void): vscode.Disposable {
 	let cmd = () => {
-		let editor = vscode.window.activeTextEditor;
+		let editor = vscode.window.activeTextEditor
 
 		if (editor == null) {
-			return;
+			return
 		}
 		fn(editor)
 	}
@@ -39,18 +39,18 @@ class Formatter {
 		let delta: vscode.TextEdit[] = []
 		for (let i = 0; i < lineCount; i++) {
 			let line = lineAt(i).text
-			if (line.substring(0, 1) === "[") {
-				cellStarts = undefined
-				continue
-			}
-			let isAnnotation = line.endsWith("@Header")
-			let commentStart = line.indexOf("//", isAnnotation ? line.indexOf("//") + 2 : 0)
+
+			let isHeader = line.substring(0, 1) === "#"
+			let commentStart = line.indexOf("//")
 			let contentLength = commentStart < 0 ? line.length : commentStart
 			let cells = line.substring(0, contentLength).split(";")
-			if (cells.length === 1)
+			if (cells.length === 1) {
+				if (isHeader)
+					cellStarts = undefined
 				continue
+			}
 
-			if (isAnnotation || !cellStarts) {
+			if (isHeader || !cellStarts) {
 				let leftTrimed = cells.map(s => s.trimLeft())
 				let pos = 0
 				cellStarts = []
@@ -85,7 +85,7 @@ class StatusBarCollInfo implements vscode.Disposable {
 
 	constructor() {
 
-		this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
+		this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0)
 		this.disposables.push(
 			vscode.window.onDidChangeTextEditorSelection(e => this.update(e.textEditor)),
 		)
@@ -116,16 +116,15 @@ class StatusBarCollInfo implements vscode.Disposable {
 			.length - 1
 
 		while (l > 0) {
-			l--;
 			let line = document
 				.lineAt(l)
 				.text
-			if (line.startsWith("["))
-				break
-			let isAnnotation = line.endsWith("@Header")
-			if (!isAnnotation)
+			if (!line.startsWith("#")) {
+				l--
 				continue
-			let commentStart = line.indexOf("//", line.indexOf("//") + 2)
+			}
+
+			let commentStart = line.indexOf("//")
 			let contentLength = commentStart < 0 ? line.length : commentStart
 			let cells = line.substring(0, contentLength).split(";")
 			return (cells[cellId] ?? "").replace("//", "").trim()

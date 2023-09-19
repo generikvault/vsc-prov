@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import * as col from './col'
+import * as format from './format'
 
 export default class Provider implements vscode.DocumentSymbolProvider {
 
@@ -30,7 +30,7 @@ export default class Provider implements vscode.DocumentSymbolProvider {
                     new vscode.Range(new vscode.Position(start, 0), last),
                     new vscode.Range(new vscode.Position(start, 1), new vscode.Position(start, 1 + name.length))))
 
-            let [cells, _] = col.parseLine(line.substring(1))
+            let [cells, _] = format.parseLine(line.substring(1))
 
             name = cells.map(s => s.trim()).join("; ")
             start = i

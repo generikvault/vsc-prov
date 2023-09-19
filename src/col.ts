@@ -1,13 +1,6 @@
 import { start } from 'repl'
 import * as vscode from 'vscode'
-
-export function parseLine(line: string): [string[], string] {
-    var commentStart = line.indexOf("//")
-    var contentLength = commentStart < 0 ? line.length : commentStart
-    var cells = line.substring(0, contentLength).split(";")
-    var comment = commentStart < 0 ? "" : line.substring(commentStart + 2)
-    return [cells, comment.trim()]
-}
+import * as format from './format'
 
 export async function selectCol(editor: vscode.TextEditor) {
     const { document } = editor
@@ -39,7 +32,13 @@ export async function moveColLeft(editor: vscode.TextEditor) {
         return
     const cid = cellId
 
-    editor.edit(edit => swapCol(edit, cp, document, cp.firstTableLine(active.line), cid, cid - 1))
+    let fistLine = cp.firstTableLine(active.line)
+    await editor.edit(
+        edit => swapCol(edit, cp, document, fistLine, cid, cid - 1),
+    )
+    let [formats, _] = format.tableFormatings(document, fistLine)
+    await editor.edit(edit => formats.forEach(f => edit.replace(f.range, f.newText)))
+
     var sel = cp.cellSelection(active.line, cid - 1)
     if (sel != null)
         editor.selection = sel
@@ -47,7 +46,7 @@ export async function moveColLeft(editor: vscode.TextEditor) {
 
 function swapCol(edit: vscode.TextEditorEdit, cp: ColParser, document: vscode.TextDocument, first: number, a: number, b: number) {
     for (var l = first; l < document.lineCount; l++) {
-        if ( cp.isCaption(l) && l != first)
+        if (cp.isCaption(l) && l != first)
             break
 
         var cellA = cp.cellSelection(l, a)
@@ -74,11 +73,15 @@ export async function moveColRight(editor: vscode.TextEditor) {
         return
     const cid = cellId
 
-    editor.edit(edit => swapCol(edit, cp, document, cp.firstTableLine(active.line), cid, cid + 1))
+    let fistLine = cp.firstTableLine(active.line)
+    await editor.edit(
+        edit => swapCol(edit, cp, document, fistLine, cid, cid + 1),
+    )
+    let [formats, _] = format.tableFormatings(document, fistLine)
+    await editor.edit(edit => formats.forEach(f => edit.replace(f.range, f.newText)))
     var sel = cp.cellSelection(active.line, cid + 1)
     if (sel != null)
         editor.selection = sel
-    // TODO format
 }
 
 class ColParser {
@@ -134,7 +137,7 @@ class ColParser {
             if (begin == 0)
                 return
         }
-        if (col == 0 && content.trimLeft().startsWith("#")){
+        if (col == 0 && content.trimLeft().startsWith("#")) {
             begin = content.indexOf("#") + 1
         }
         var end = content.indexOf(";", begin)
